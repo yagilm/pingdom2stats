@@ -56,6 +56,7 @@ type Configuration struct {
 
 // Config keeps the configuration
 var Config Configuration
+var version = "development"
 
 // Check if configuration is invalid
 func (conf Configuration) configurationInvalid() bool {
@@ -96,7 +97,7 @@ func init() {
 	flag.Int32Var(&Config.from, "from", int32(time.Now().Add(-24*time.Hour).Unix()), "from which (Unix)time we are asking, default 24 hours ago =>")
 	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default: now =>")
 	flag.Usage = func() {
-		fmt.Printf("Usage: pingdom2-- [options]\nRequired options:\n")
+		fmt.Printf("Version: %s\nUsage: pingdom2mysql [options]\nRequired options:\n", version)
 		flag.PrintDefaults()
 	}
 	flag.Parse()
