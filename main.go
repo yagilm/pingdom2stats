@@ -144,6 +144,18 @@ func getpingdomdata() (*Response, error) {
 // I think I will be using olivere/elastic https://github.com/olivere/elastic for this to send it to ES
 // Nevertheless, we need to decide on a data store....
 // }
+func sendtomysql(res *Response) error {
+
+	for _, hour := range res.Summary.Hours {
+		fmt.Println(hour.Starttime.Time, hour.Uptime, hour.Avgresponse, hour.Downtime)
+	}
+
+	// cupcake9:bi-db:$TABLE:
+	// Here is the structure of the table:
+	// id | timestamp | avg_uptime | avg_responcetime |
+	// check if scheme is correct?
+	return nil
+}
 
 func main() {
 	timer := time.NewTicker(time.Second * 2)
