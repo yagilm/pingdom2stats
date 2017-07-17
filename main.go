@@ -129,12 +129,13 @@ func getpingdomdata() (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println(string(body))
 	var response Response
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, err
 	}
+	response.Summary.Hours = response.Summary.Hours[:len(response.Summary.Hours)-1]
+	// fmt.Println(response.Summary.Hours[0].Starttime.String())
 	return &response, err
 }
 
