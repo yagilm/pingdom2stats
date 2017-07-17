@@ -50,6 +50,8 @@ type Configuration struct {
 	headerXappkey string
 	checkname     string // name of the check, ex summary.average
 	checkid       string // id of the check, aka, which domain are we checking
+	from          int32
+	to            int32
 }
 
 // Config keeps the configuration
@@ -91,6 +93,8 @@ func init() {
 	flag.StringVar(&Config.headerXappkey, "appkey", "", "Appkey for pingdom's API")
 	flag.StringVar(&Config.checkname, "checkname", "", "Name of the check (eg summary.average)") //multiple checks seperated by comma?
 	flag.StringVar(&Config.checkid, "checkid", "", "id of the check, which domain are we checking?")
+	flag.Int32Var(&Config.from, "from", int32(time.Now().Add(-24*time.Hour).Unix()), "from which (Unix)time we are asking, default 24 hours ago =>")
+	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default: now =>")
 	flag.Usage = func() {
 		fmt.Printf("Usage: pingdom2-- [options]\nRequired options:\n")
 		flag.PrintDefaults()
@@ -107,9 +111,11 @@ func getpingdomdata() (*Response, error) {
 	// make the request with the appropriate headers
 	req, err := http.NewRequest("GET",
 		fmt.Sprintf(
-			"https://api.pingdom.com/api/2.0/%s/%s?from=1499330970&includeuptime=true", //TODO Add: ?from=$(date -d '1 minute ago' +"%s")\&includeuptime=true
+			"https://api.pingdom.com/api/2.0/%s/%s?from=%d&to=%d&includeuptime=true", //TODO Add: ?from=$(date -d '1 minute ago' +"%s")\&includeuptime=true
 			Config.checkname,
-			Config.checkid),
+			Config.checkid,
+			Config.from,
+			Config.to),
 		nil)
 	if err != nil {
 		return nil, err
