@@ -158,19 +158,9 @@ func sendtomysql(res *Response) error {
 }
 
 func main() {
-	timer := time.NewTicker(time.Second * 2)
-	// infinite loop
-	for {
-		res, err := getpingdomdata()
-		if err != nil {
-			fmt.Print("Something went wrong requesting the json in the API:", err)
-		}
-		toprint, err := json.MarshalIndent(res, "", "  ")
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		log.Println(string(toprint))
-		<-timer.C
+	res, err := getpingdomdata()
+	if err != nil {
+		log.Panicln("Something went wrong requesting the json in the API:", err)
 	}
+	sendtomysql(res)
 }
