@@ -70,20 +70,13 @@ func (conf Configuration) configurationInvalid() bool {
 // Response describes the parts we want from cloudflare's json response
 type Response struct {
 	Summary struct {
-		// Depending on the data store see if I need to do smth with the time, if i
-		// send it as unix time, i might as well send the int
-		// https://stackoverflow.com/questions/24987131/how-to-parse-unix-timestamp-in-golang
-		Responsetime struct {
-			Avgresponse int `json:"avgresponse"`
-			From        int `json:"from"`
-			To          int `json:"to"`
-		} `json:"responsetime"`
+		Hours []struct {
+			Avgresponse int       `json:"avgresponse"`
+			Downtime    int       `json:"downtime"`
+			Starttime   Timestamp `json:"starttime"`
+			Uptime      int       `json:"uptime"`
+		} `json:"hours"`
 	} `json:"summary"`
-	Status struct {
-		Totaldown    int `json:"totaldown"`
-		Totalunknown int `json:"totalunknown"`
-		Totalup      int `json:"totalup"`
-	}
 }
 
 // init() runs before the main function as described in:
