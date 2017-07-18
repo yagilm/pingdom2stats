@@ -27,11 +27,12 @@ type Configuration struct {
 	pass          string
 	headerXappkey string
 	// checkname     string // name of the check, ex summary.average
-	checkid  string // id of the check, aka, which domain are we checking
-	from     int32
-	to       int32
-	output   string
-	mysqlurl string // mysql connection in DSN (Data Source Name)
+	checkid   string // id of the check, aka, which domain are we checking
+	from      int32
+	to        int32
+	output    string
+	mysqlurl  string // mysql connection in DSN (Data Source Name)
+	inittable bool
 }
 
 // Config keeps the configuration
@@ -71,7 +72,8 @@ func init() {
 	flag.Int32Var(&Config.from, "from", int32(time.Now().Add(-24*time.Hour).Unix()), "from which (Unix)time we are asking, default 24 hours ago which is ")
 	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default now which is ")
 	flag.StringVar(&Config.output, "output", "console", "Output destination (console, mysql)")
-	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN (username:password@address/dbname)")
+	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN, like: username:password@(address)/dbname")
+	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table")
 
 	flag.Usage = func() {
 		fmt.Println("Using Pingdom's API as described in: https://www.pingdom.com/resources/api")
@@ -151,16 +153,35 @@ func sendToMysql(res *Response) error {
 	// check if scheme is correct?
 	return nil
 }
+func initializeTable() {
+	// Connect to the DB
+	db, err := sql.Open("mysql", Config.mysqlurl)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS summary_performances (timestamp DATETIME PRIMARY KEY);`)
+	if err != nil {
+		panic(err.Error())
+	}
+}
 
 func main() {
 	res, err := getPingdomData()
 	if err != nil {
 		log.Panicln("Something went wrong requesting the json in the API:", err)
 	}
+	if Config.inittable {
+		initializeTable()
+		os.Exit(0)
+	}
 	if Config.output == "console" {
 		consoleOutput(res)
 	} else if Config.output == "mysql" {
 		sendToMysql(res)
 	}
-
 }
