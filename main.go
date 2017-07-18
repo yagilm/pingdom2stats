@@ -78,7 +78,7 @@ func init() {
 }
 
 // Gets data from Pingdom's API
-func getpingdomdata() (*Response, error) {
+func getPingdomData() (*Response, error) {
 	// make the request with the appropriate headers
 	req, err := http.NewRequest("GET",
 		fmt.Sprintf(
@@ -121,7 +121,7 @@ func getpingdomdata() (*Response, error) {
 // I think I will be using olivere/elastic https://github.com/olivere/elastic for this to send it to ES
 // Nevertheless, we need to decide on a data store....
 // }
-func sendtomysql(res *Response) error {
+func sendToMysql(res *Response) error {
 
 	for _, hour := range res.Summary.Hours {
 		fmt.Println(hour.Starttime.Time, hour.Uptime, hour.Avgresponse, hour.Downtime)
@@ -135,9 +135,9 @@ func sendtomysql(res *Response) error {
 }
 
 func main() {
-	res, err := getpingdomdata()
+	res, err := getPingdomData()
 	if err != nil {
 		log.Panicln("Something went wrong requesting the json in the API:", err)
 	}
-	sendtomysql(res)
+	sendToMysql(res)
 }
