@@ -140,14 +140,20 @@ func consoleOutput(res *Response) error {
 	}
 	return nil
 }
-
-func sendToMysql(res *Response) error {
-
-	// Connect to the DB
+func connectToDB() *sql.DB {
 	db, err := sql.Open("mysql", Config.mysqlurl)
 	if err != nil {
 		panic(err.Error())
 	}
+	err = db.Ping()
+	if err != nil {
+		panic(err.Error())
+	}
+	return db
+}
+
+func sendToMysql(res *Response) error {
+	db := connectToDB()
 	defer db.Close()
 
 	// cupcake9:bi-db:$TABLE:
@@ -157,16 +163,9 @@ func sendToMysql(res *Response) error {
 	return nil
 }
 func initializeTable() {
-	// Connect to the DB
-	db, err := sql.Open("mysql", Config.mysqlurl)
-	if err != nil {
-		panic(err.Error())
-	}
+	db := connectToDB()
 	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		panic(err.Error())
-	}
+	var err error
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS summary_performances (timestamp DATETIME PRIMARY KEY);`)
 	if err != nil {
 		panic(err.Error())
