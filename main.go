@@ -41,6 +41,9 @@ var version = "development"
 
 // Check if configuration is invalid
 func (conf Configuration) configurationInvalid() bool {
+	if conf.inittable {
+		return conf.mysqlurl == ""
+	}
 	return conf.usermail == "" ||
 		conf.pass == "" ||
 		conf.headerXappkey == "" ||
@@ -73,7 +76,7 @@ func init() {
 	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default now which is ")
 	flag.StringVar(&Config.output, "output", "console", "Output destination (console, mysql)")
 	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN, like: username:password@(address)/dbname")
-	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table")
+	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table, requires --mysqlurl ")
 
 	flag.Usage = func() {
 		fmt.Println("Using Pingdom's API as described in: https://www.pingdom.com/resources/api")
