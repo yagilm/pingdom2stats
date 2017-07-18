@@ -82,15 +82,16 @@ type Response struct {
 // init() runs before the main function as described in:
 // https://golang.org/doc/effective_go.html#init
 func init() {
-	flag.StringVar(&Config.usermail, "email", "", "e-mail account for pingdom's API")
+	flag.StringVar(&Config.usermail, "email", "", "Pingdom's API configured e-mail account")
 	flag.StringVar(&Config.pass, "pass", "", "password for pingdom's API")
 	flag.StringVar(&Config.headerXappkey, "appkey", "", "Appkey for pingdom's API")
-	flag.StringVar(&Config.checkname, "checkname", "", "Name of the check (eg summary.average)") //multiple checks seperated by comma?
-	flag.StringVar(&Config.checkid, "checkid", "", "id of the check, which domain are we checking?")
-	flag.Int32Var(&Config.from, "from", int32(time.Now().Add(-24*time.Hour).Unix()), "from which (Unix)time we are asking, default 24 hours ago =>")
-	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default: now =>")
+	flag.StringVar(&Config.checkname, "checkname", "", "Name of the check (eg summary.performance)") //multiple checks seperated by comma?
+	flag.StringVar(&Config.checkid, "checkid", "", "ID of the check, aka the domain are we checking.")
+	flag.Int32Var(&Config.from, "from", int32(time.Now().Add(-24*time.Hour).Unix()), "from which (Unix)time we are asking, default 24 hours ago which is ")
+	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default now which is ")
 	flag.Usage = func() {
-		fmt.Printf("Version: %s\nUsage: pingdom2mysql [options]\nRequired options:\n", version)
+		fmt.Println("Using Pingdom's API as described in: https://www.pingdom.com/resources/api")
+		fmt.Printf("Version: %s\nUsage: pingdom2mysql [options]\nAll options are required (but some have defaults):\n", version)
 		flag.PrintDefaults()
 	}
 	flag.Parse()

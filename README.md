@@ -1,19 +1,28 @@
 # What
-Pulls data from Pingdom's API and pushes them to a data store (Elastic Search?)
+Pulls data from Pingdom's API and pushes them to a mysql table
 
-# How
-All options are required:
+# Prerequisites
+We need a DB table to write the data into.. Since there would probably be many different checks (--checkid), I am thinking of table columns like `$checkid_avg`, `$checkid_down` etc..
+
+# Usage information
 ```
-Usage: pingdom2-- [options]
-Required options:
+Using Pingdom's API as described in: https://www.pingdom.com/resources/api
+Version: 0.1
+Usage: pingdom2mysql [options]
+All options are required (but some have defaults):
   --appkey string
         Appkey for pingdom's API
   --checkid string
-        id of the check, which domain are we checking?
+        ID of the check, aka the domain are we checking.
+        Note: for multiple checks, run pingdom2mysql multiple times!
   --checkname string
-        Name of the check (eg summary.average)
+        Name of the check (eg summary.performance)
   --email string
-        e-mail account for pingdom's API
+        Pingdom's API configured e-mail account
+  --from value
+        from which (Unix)time we are asking, default 24 hours ago which is (default 1500287566)
   --pass string
         password for pingdom's API
+  --to value
+        until which (Unix)time we are asking, default now which is  (default 1500373966)
 ```
