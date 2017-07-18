@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	flag "github.com/ogier/pflag"
 )
 
@@ -24,10 +26,12 @@ type Configuration struct {
 	usermail      string
 	pass          string
 	headerXappkey string
-	checkname     string // name of the check, ex summary.average
-	checkid       string // id of the check, aka, which domain are we checking
-	from          int32
-	to            int32
+	// checkname     string // name of the check, ex summary.average
+	checkid  string // id of the check, aka, which domain are we checking
+	from     int32
+	to       int32
+	output   string
+	mysqlurl string // mysql connection in DSN (Data Source Name)
 }
 
 // Config keeps the configuration
@@ -39,8 +43,9 @@ func (conf Configuration) configurationInvalid() bool {
 	return conf.usermail == "" ||
 		conf.pass == "" ||
 		conf.headerXappkey == "" ||
-		conf.checkname == "" ||
-		conf.checkid == ""
+		// conf.checkname == "" ||
+		conf.checkid == "" ||
+		conf.output == ""
 }
 
 // Response describes the parts we want from cloudflare's json response
@@ -61,10 +66,13 @@ func init() {
 	flag.StringVar(&Config.usermail, "email", "", "Pingdom's API configured e-mail account")
 	flag.StringVar(&Config.pass, "pass", "", "password for pingdom's API")
 	flag.StringVar(&Config.headerXappkey, "appkey", "", "Appkey for pingdom's API")
-	flag.StringVar(&Config.checkname, "checkname", "", "Name of the check (eg summary.performance)") //multiple checks seperated by comma?
+	// flag.StringVar(&Config.checkname, "checkname", "", "Name of the check (eg summary.performance)") //multiple checks seperated by comma?
 	flag.StringVar(&Config.checkid, "checkid", "", "ID of the check, aka the domain are we checking.")
 	flag.Int32Var(&Config.from, "from", int32(time.Now().Add(-24*time.Hour).Unix()), "from which (Unix)time we are asking, default 24 hours ago which is ")
 	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default now which is ")
+	flag.StringVar(&Config.output, "output", "console", "Output destination (console, mysql)")
+	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN (username:password@address/dbname)")
+
 	flag.Usage = func() {
 		fmt.Println("Using Pingdom's API as described in: https://www.pingdom.com/resources/api")
 		fmt.Printf("Version: %s\nUsage: pingdom2mysql [options]\nAll options are required (but some have defaults):\n", version)
@@ -82,8 +90,8 @@ func getPingdomData() (*Response, error) {
 	// make the request with the appropriate headers
 	req, err := http.NewRequest("GET",
 		fmt.Sprintf(
-			"https://api.pingdom.com/api/2.0/%s/%s?from=%d&to=%d&includeuptime=true", //TODO Add: ?from=$(date -d '1 minute ago' +"%s")\&includeuptime=true
-			Config.checkname,
+			"https://api.pingdom.com/api/2.0/summary.performance/%s?from=%d&to=%d&includeuptime=true", //TODO Add: ?from=$(date -d '1 minute ago' +"%s")\&includeuptime=true
+			// Config.checkname,
 			Config.checkid,
 			Config.from,
 			Config.to),
@@ -121,11 +129,21 @@ func getPingdomData() (*Response, error) {
 // I think I will be using olivere/elastic https://github.com/olivere/elastic for this to send it to ES
 // Nevertheless, we need to decide on a data store....
 // }
-func sendToMysql(res *Response) error {
-
+func consoleOutput(res *Response) error {
 	for _, hour := range res.Summary.Hours {
 		fmt.Println(hour.Starttime.Time, hour.Uptime, hour.Avgresponse, hour.Downtime)
 	}
+	return nil
+}
+
+func sendToMysql(res *Response) error {
+
+	// Connect to the DB
+	db, err := sql.Open("mysql", Config.mysqlurl)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer db.Close()
 
 	// cupcake9:bi-db:$TABLE:
 	// Here is the structure of the table:
@@ -139,5 +157,10 @@ func main() {
 	if err != nil {
 		log.Panicln("Something went wrong requesting the json in the API:", err)
 	}
-	sendToMysql(res)
+	if Config.output == "console" {
+		consoleOutput(res)
+	} else if Config.output == "mysql" {
+		sendToMysql(res)
+	}
+
 }
