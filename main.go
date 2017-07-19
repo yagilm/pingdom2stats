@@ -44,6 +44,7 @@ func init() {
 	flag.StringVar(&Config.output, "output", "console", "Output destination (console, mysql)")
 	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN, like: username:password@(address)/dbname")
 	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table, requires --mysqlurl ")
+	flag.BoolVar(&Config.addcheck, "addcheck", false, "Add new check into the mysql table, requires --mysqlurl, --checkid ")
 
 	flag.Usage = func() {
 		fmt.Println("Using Pingdom's API as described in: https://www.pingdom.com/resources/api")
@@ -101,6 +102,7 @@ func consoleOutput(res *Response) error {
 }
 func connectToDB() *sql.DB {
 	db, err := sql.Open("mysql", Config.mysqlurl)
+	// db, err := sql.Open("mysql", Config.mysqlurl+"?interpolateParams=true")
 	if err != nil {
 		panic(err.Error())
 	}
@@ -126,18 +128,29 @@ func initializeTable() {
 		panic(err.Error())
 	}
 }
-func addCheckID() {
+func addCheckID(checkid string) {
+	fmt.Println(checkid)
 	db := connectToDB()
 	defer db.Close()
+	// TODO: Add check for if the column exists
+	// IDEA: Get the name of the check and make columns self explanatory
+	_, err := db.Exec(fmt.Sprintf("ALTER TABLE summary_performances ADD COLUMN %s_avgresponse int, ADD COLUMN %s_downtime int", checkid, checkid))
+	if err != nil {
+		panic(err.Error())
+	}
 }
 func main() {
-	res, err := getPingdomData()
-	if err != nil {
-		log.Panicln("Something went wrong requesting the json in the API:", err)
-	}
 	if Config.inittable {
 		initializeTable()
 		os.Exit(0)
+	}
+	if Config.addcheck {
+		addCheckID(Config.checkid)
+		os.Exit(0)
+	}
+	res, err := getPingdomData()
+	if err != nil {
+		log.Panicln("Something went wrong requesting the json in the API:", err)
 	}
 	if Config.output == "console" {
 		consoleOutput(res)
