@@ -78,12 +78,13 @@ func getPingdomData() (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("API not 200")
-	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
+	}
+	if res.StatusCode != http.StatusOK {
+		fmt.Println(string(body))
+		return nil, errors.New("API not 200")
 	}
 	var response Response
 	err = json.Unmarshal(body, &response)
