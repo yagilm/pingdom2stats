@@ -115,9 +115,19 @@ func connectToDB() *sql.DB {
 }
 
 func sendToMysql(res *Response) error {
+	checknameid := getCheckName()
 	db := connectToDB()
 	defer db.Close()
-
+	for _, hour := range res.Summary.Hours {
+		starttime := hour.Starttime.Time.UTC().Format("2006-01-02 15:04:05")
+		avgresponcetime := hour.Avgresponse
+		downtime := hour.Downtime
+		_, err := db.Exec(fmt.Sprintf("INSERT INTO summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON DUPLICATE KEY UPDATE %s_avgresponse=%d,%s_downtime=%d", checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime))
+		if err != nil {
+			panic(err.Error())
+		}
+		fmt.Println(hour.Starttime.Time, hour.Uptime, hour.Avgresponse, hour.Downtime)
+	}
 	return nil
 }
 func initializeTable() {
@@ -133,7 +143,6 @@ func addCheckID(checkid string) {
 	db := connectToDB()
 	defer db.Close()
 	// TODO: Add check for if the column exists
-	// IDEA: Get the name of the check and make columns self explanatory
 	checknameid := getCheckName()
 	_, err := db.Exec(fmt.Sprintf("ALTER TABLE summary_performances ADD COLUMN %s_avgresponse int, ADD COLUMN %s_downtime int", checknameid, checknameid))
 	if err != nil {
