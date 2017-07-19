@@ -12,12 +12,17 @@ type Configuration struct {
 	output    string
 	mysqlurl  string // mysql connection in DSN (Data Source Name)
 	inittable bool
+	addcheck  bool
 }
 
 // Check if configuration is invalid
 func (conf Configuration) configurationInvalid() bool {
 	if conf.inittable {
 		return conf.mysqlurl == ""
+	}
+	if conf.addcheck {
+		return conf.mysqlurl == "" ||
+			conf.checkid == ""
 	}
 	return conf.usermail == "" ||
 		conf.pass == "" ||

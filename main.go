@@ -129,12 +129,12 @@ func initializeTable() {
 	}
 }
 func addCheckID(checkid string) {
-	fmt.Println(checkid)
 	db := connectToDB()
 	defer db.Close()
 	// TODO: Add check for if the column exists
 	// IDEA: Get the name of the check and make columns self explanatory
-	_, err := db.Exec(fmt.Sprintf("ALTER TABLE summary_performances ADD COLUMN %s_avgresponse int, ADD COLUMN %s_downtime int", checkid, checkid))
+	checknameid := getCheckName()
+	_, err := db.Exec(fmt.Sprintf("ALTER TABLE summary_performances ADD COLUMN %s_avgresponse int, ADD COLUMN %s_downtime int", checknameid, checknameid))
 	if err != nil {
 		panic(err.Error())
 	}
