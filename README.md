@@ -29,9 +29,15 @@ Run the --addcheck multiple times to add multiple checks.
 
 - The program should be used like this:
 ```
- pingdom2mysql --appkey=$YOURAPPKEY --checkid=$CHECKID --email=$ACCOUNDMAIL --pass=ACCOUNDPASSWORD  --mysqlurl="$DBUSER:$DBPASS@($DBIP:$DBPORT)/$DBNAME" --output="mysql"
+ pingdom2mysql --appkey=$YOURAPPKEY --checkid=$CHECKID --email=$ACCOUNTMAIL --pass=$ACCOUNTPASSWORD --mysqlurl="$DBUSER:$DBPASS@($DBIP:$DBPORT)/$DBNAME" --output="mysql"
 ```
 You might want to use `--output="console"` first to see the data that will end up in your database.
+
+- For running it inside docker create the docker image by running
+`make pingdom2mysql-docker` and then run it like
+```
+docker run --rm pingdom2mysql --appkey=$YOURAPPKEY --checkid=$CHECKID --email=$ACCOUNTMAIL --pass=$ACCOUNTPASSWORD  --mysqlurl="$DBUSER:$DBPASS@($DBIP:$DBPORT)/$DBNAME" --output="mysql"
+```
 
 ## Pulling the historical data from Pingdom
 In order to pull the historical data and write it in the data store, you need to run `fetch_history $UNIX_TIMESTAMP_OF_CHECK_CREATION`.
