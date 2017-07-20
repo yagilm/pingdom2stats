@@ -126,7 +126,7 @@ func sendToMysql(res *Response) error {
 		if err != nil {
 			panic(err.Error())
 		}
-		fmt.Println(hour.Starttime.Time, hour.Uptime, hour.Avgresponse, hour.Downtime)
+		// fmt.Println(hour.Starttime.Time, hour.Uptime, hour.Avgresponse, hour.Downtime)
 	}
 	return nil
 }
