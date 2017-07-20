@@ -6,13 +6,13 @@
 Result: `{"error":{"statuscode":400,"statusdesc":"Bad Request","errormessage":"Interval is too big for this resolution"}}`
 
 ## Features
+- Better string replacemen
 
 ### Extend output possibilities
 - Elasticsearch
-- Raw MySQL statements
 
 ### Interfaces improvements
 - error handling and output
-
+  - Properly handle mysql errors
 ### Extend functionality
 - Support different resolutions (now only hourly, API supports 'hour, day, week')
