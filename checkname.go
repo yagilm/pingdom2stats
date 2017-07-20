@@ -47,5 +47,8 @@ func getCheckName() string {
 		panic(err.Error())
 	}
 	checkidName := strings.Replace(responseName.Check.Name, " ", "_", -1)
+	checkidName = strings.Replace(checkidName, "/", "_", -1)
+	checkidName = strings.Replace(checkidName, ".", "_", -1)
+	checkidName = strings.Replace(checkidName, "__", "_", -1)
 	return checkidName
 }
