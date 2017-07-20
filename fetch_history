@@ -1,0 +1,25 @@
+#!/bin/bash
+
+## CHANGE THE VARIABLES BENEATH FOR THIS TO WORK!
+APPKEY=''
+EMAIL=''
+PASS=''
+MYSQLURL=''
+OUTPUT=mysql
+CHECKID=''
+## Constants (in Unix timestamp format)
+DAYINSECONDS=86400
+NOW=$(date +%s)
+
+COUNTER=$1 # First argument (in Uniox Timestamp)
+
+if [ -z "$COUNTER" ]
+then
+  echo "Please run like fetch_history $CHECK_CREATED_TIMESTAMP"
+  echo "You can find this by running: "
+  echo "curl -u $USER:$PASS -H "app-key: $APPKEY" https://api.pingdom.com/api/2.0/checks/ | jq ."
+fi
+while [  $COUNTER -lt $NOW ]; do
+  ./pingdom2mysql --appkey=${APPKEY} --email=${EMAIL} --pass=${PASS}  --mysqlurl=${MYSQLURL} --output=${OUTPUT} --checkid=${CHECKID} --from=$(($COUNTER - $DAYINSECONDS)) --to=$COUNTER
+    let COUNTER=COUNTER+$DAYINSECONDS
+done

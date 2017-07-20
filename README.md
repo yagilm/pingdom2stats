@@ -33,6 +33,10 @@ Run the --addcheck multiple times to add multiple checks.
 ```
 You might want to use `--output="console"` first to see the data that will end up in your database.
 
+## Pulling the historical data from Pingdom
+In order to pull the historical data and write it in the data store, you need to run `fetch_history $UNIX_TIMESTAMP_OF_CHECK_CREATION`.
+You would need to add the configuration variables, lines 4-9 of `fetch_history`.
+
 # Usage information
 ```
 ./pingdom2mysql --help
