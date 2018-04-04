@@ -12,6 +12,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	flag "github.com/ogier/pflag"
 )
 
@@ -43,6 +44,7 @@ func init() {
 	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default now which is ")
 	flag.StringVar(&Config.output, "output", "console", "Output destination (console, mysql)")
 	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN, like: username:password@(address)/dbname")
+	flag.StringVar(&Config.pgurl, "pgurl", "", "postgres connection in DSN, like: username:password@(address)/dbname")
 	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table, requires --mysqlurl ")
 	flag.BoolVar(&Config.addcheck, "addcheck", false, "Add new check into the mysql table, requires --mysqlurl, --checkid ")
 
@@ -102,8 +104,9 @@ func consoleOutput(res *Response) error {
 	return nil
 }
 func connectToDB() *sql.DB {
-	db, err := sql.Open("mysql", Config.mysqlurl)
-	// db, err := sql.Open("mysql", Config.mysqlurl+"?interpolateParams=true")
+	//	db, err := sql.Open("mysql", Config.mysqlurl)
+	dbtype, dburl := Config.selectdbsystem()
+	db, err := sql.Open(dbtype, dburl)
 	if err != nil {
 		panic(err.Error())
 	}

@@ -3,6 +3,7 @@ Pulls data from Pingdom's API and pushes them to a mysql table.
 
 # How to use
 A database is needed with the appropriate rights.
+Note: if you are using postgres, change `--mysqlurl` with `--pgurl`
 - On first run, the user must create the table. They can do that manually or by running:
 `pingdom2mysql --inittable --mysqlurl="username:password@(address)/dbname"`
 in order to create the table (and check the DB connection)

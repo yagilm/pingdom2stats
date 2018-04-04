@@ -11,6 +11,7 @@ type Configuration struct {
 	to        int32
 	output    string
 	mysqlurl  string // mysql connection in DSN (Data Source Name)
+	pgurl     string // postgres connection in DSN (Data Source Name)
 	inittable bool
 	addcheck  bool
 }
@@ -18,10 +19,10 @@ type Configuration struct {
 // Check if configuration is invalid
 func (conf Configuration) configurationInvalid() bool {
 	if conf.inittable {
-		return conf.mysqlurl == ""
+		return conf.mysqlurl == "" && conf.pgurl == ""
 	}
 	if conf.addcheck {
-		return conf.mysqlurl == "" ||
+		return (conf.mysqlurl == "" && conf.pgurl == "") ||
 			conf.checkid == ""
 	}
 	return conf.usermail == "" ||
@@ -29,5 +30,16 @@ func (conf Configuration) configurationInvalid() bool {
 		conf.headerXappkey == "" ||
 		// conf.checkname == "" ||
 		conf.checkid == "" ||
-		conf.output == ""
+		conf.output == "" ||
+		(conf.mysqlurl != "" && conf.pgurl != "")
+}
+
+func (conf Configuration) selectdbsystem() (string, string) {
+	if conf.mysqlurl != "" {
+		return "mysql", conf.mysqlurl
+	}
+	if conf.pgurl != "" {
+		return "postgres", conf.pgurl
+	}
+	return "", ""
 }
