@@ -42,9 +42,9 @@ func init() {
 	flag.StringVar(&Config.checkid, "checkid", "", "ID of the check, aka the domain are we checking.")
 	flag.Int32Var(&Config.from, "from", int32(time.Now().Add(-24*time.Hour).Unix()), "from which (Unix)time we are asking, default 24 hours ago which is ")
 	flag.Int32Var(&Config.to, "to", int32(time.Now().Unix()), "until which (Unix)time we are asking, default now which is ")
-	flag.StringVar(&Config.output, "output", "console", "Output destination (console, mysql)")
-	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN, like: username:password@(address)/dbname")
-	flag.StringVar(&Config.pgurl, "pgurl", "", "postgres connection in DSN, like: username:password@(address)/dbname")
+	flag.StringVar(&Config.output, "output", "console", "Output destination (console, db)")
+	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN, like: username:password@(address)/dbname.\n\tCannot use together with --pgurl")
+	flag.StringVar(&Config.pgurl, "pgurl", "", "postgres connection in DSN, like: postgres://username:password@address:port/dbname?sslmode=disable.\n\tCannot use together with --mysqlurl")
 	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table, requires --mysqlurl ")
 	flag.BoolVar(&Config.addcheck, "addcheck", false, "Add new check into the mysql table, requires --mysqlurl, --checkid ")
 
@@ -118,6 +118,7 @@ func connectToDB() *sql.DB {
 }
 
 func sendToMysql(res *Response) error {
+	var statement string
 	checknameid := getCheckName()
 	db := connectToDB()
 	defer db.Close()
@@ -125,11 +126,16 @@ func sendToMysql(res *Response) error {
 		starttime := hour.Starttime.Time.UTC().Format("2006-01-02 15:04:05")
 		avgresponcetime := hour.Avgresponse
 		downtime := hour.Downtime
-		_, err := db.Exec(fmt.Sprintf("INSERT INTO summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON DUPLICATE KEY UPDATE %s_avgresponse=%d,%s_downtime=%d", checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime))
+		switch dbtype, _ := Config.selectdbsystem(); dbtype {
+		case "mysql":
+			statement = fmt.Sprintf("INSERT INTO summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON DUPLICATE KEY UPDATE %s_avgresponse=%d,%s_downtime=%d", checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
+		case "postgres":
+			statement = fmt.Sprintf("INSERT INTO summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON CONFLICT (timestamp) DO UPDATE SET %s_avgresponse=%d,%s_downtime=%d", checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
+		}
+		_, err := db.Exec(statement)
 		if err != nil {
 			panic(err.Error())
 		}
-		// fmt.Println(hour.Starttime.Time, hour.Uptime, hour.Avgresponse, hour.Downtime)
 	}
 	return nil
 }
@@ -137,7 +143,14 @@ func initializeTable() {
 	db := connectToDB()
 	defer db.Close()
 	var err error
-	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS summary_performances (timestamp DATETIME PRIMARY KEY);`)
+	var statement string
+	switch dbtype, _ := Config.selectdbsystem(); dbtype {
+	case "mysql":
+		statement = `CREATE TABLE IF NOT EXISTS summary_performances (timestamp DATETIME PRIMARY KEY);`
+	case "postgres":
+		statement = `CREATE TABLE IF NOT EXISTS summary_performances (timestamp timestamp PRIMARY KEY);`
+	}
+	_, err = db.Exec(statement)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -167,7 +180,7 @@ func main() {
 	}
 	if Config.output == "console" {
 		consoleOutput(res)
-	} else if Config.output == "mysql" {
+	} else if Config.output == "db" {
 		sendToMysql(res)
 	}
 }
