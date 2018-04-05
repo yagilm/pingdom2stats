@@ -6,7 +6,8 @@ EMAIL=''
 PASS=''
 MYSQLURL=''
 PGURL=''
-OUTPUT=mysql
+PGSCHEMA=''
+OUTPUT=db
 CHECKID=''
 ## Constants (in Unix timestamp format)
 DAYINSECONDS=86400
@@ -17,9 +18,11 @@ COUNTER=$1 # First argument (in Uniox Timestamp)
 if MYSQLURL=''; then
   DBTYPE="pgurl"
   DBURL=$PGURL
+  SCHEMA="--pgschema=$PGSCHEMA"
 elif PGURL=''; then
   DBTYPE="mysqlurl"
   DBURL=$MYSQLURL
+  SCHEMA=''
 fi
 
 if [ -z "$COUNTER" ]
@@ -29,6 +32,6 @@ then
   echo "curl -u $USER:$PASS -H "app-key: $APPKEY" https://api.pingdom.com/api/2.0/checks/ | jq ."
 fi
 while [  $COUNTER -lt $NOW ]; do
-  ./pingdom2mysql --appkey=${APPKEY} --email=${EMAIL} --pass=${PASS}  --${DBTYPE}=${DBURL} --output=${OUTPUT} --checkid=${CHECKID} --from=$(($COUNTER - $DAYINSECONDS)) --to=$COUNTER
+  ./pingdom2mysql --appkey=${APPKEY} --email=${EMAIL} --pass=${PASS}  --${DBTYPE}=${DBURL} ${SCHEMA} --output=${OUTPUT} --checkid=${CHECKID} --from=$(($COUNTER - $DAYINSECONDS)) --to=$COUNTER
     let COUNTER=COUNTER+$DAYINSECONDS
 done
