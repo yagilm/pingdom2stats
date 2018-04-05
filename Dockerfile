@@ -1,5 +1,5 @@
 FROM scratch
 ADD ca-certificates.crt /etc/ssl/certs/
-ADD pingdom2mysql-docker /
-ENTRYPOINT ["/pingdom2mysql-docker"]
+ADD pingdom2stats-docker /
+ENTRYPOINT ["/pingdom2stats-docker"]
 CMD ["--help"]

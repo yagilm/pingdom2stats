@@ -1,4 +1,4 @@
-# What
+# What is it
 Pulls data from Pingdom's API and pushes them to a mysql or postgres table.
 
 # How to use
@@ -9,18 +9,19 @@ You can use mysql or postgres with the appropriate flags. The DSN for each are:
 - Mysql: "username:password@(address)/dbname"
 - postgres: "postgres://username:password@address:port/dbname?sslmode=disable"
   - (sslmode can be disable, require, verify-ca, verify-full depending on your server configuration)
+  - for a postgres db you might need to use the --pgschema flag to define the schema. (default:"postgres")
 
 ## DB table
 On first run, the user must create the table. They can do that manually or by running:
-`pingdom2mysql --inittable --mysqlurl="username:password@(address)/dbname"` (mysql)
+`pingdom2stats --inittable --mysqlurl="username:password@(address)/dbname"` (mysql)
 or
-`pingdom2mysql --inittable --pgurl="postgres://username:password@address:port/dbname?sslmode=disable"` (postgres)
+`pingdom2stats --inittable --pgurl="postgres://username:password@address:port/dbname?sslmode=disable"` (postgres)
 in order to create the table (and check the DB connection)
 
 ## Adding checks
 For every check that it's added, run with `--addcheck` in order to add the appropriate columns to the table.
 **Attention!** For very big tables this might take some time.
-`pingdom2mysql --addcheck --checkid=$YOUR_CHECK_ID --mysqlurl="username:password@(address)/dbname"`
+`pingdom2stats --addcheck --checkid=$YOUR_CHECK_ID --mysqlurl="username:password@(address)/dbname"`
 Two new columns will be created with the name of the check and the check result fields. So your table will look like this:
 ```
 mysql> describe summary_performances;
@@ -41,15 +42,15 @@ Add it to a job scheduler like cron or chronos. I prefer to run it every 20 hour
 
 - The program should be used like this:
 ```
- pingdom2mysql --appkey=$YOURAPPKEY --checkid=$CHECKID --email=$ACCOUNTMAIL --pass=$ACCOUNTPASSWORD --mysqlurl="$DBUSER:$DBPASS@($DBIP:$DBPORT)/$DBNAME" --output="mysql"
+ pingdom2stats --appkey=$YOURAPPKEY --checkid=$CHECKID --email=$ACCOUNTMAIL --pass=$ACCOUNTPASSWORD --mysqlurl="$DBUSER:$DBPASS@($DBIP:$DBPORT)/$DBNAME" --output="mysql"
 ```
 You might want to use `--output="console"` first to see the data that will end up in your database.
 
 ## Running in docker
 For running it inside docker create the docker image by running
-`make pingdom2mysql-docker` and then run it like
+`make pingdom2stats-docker` and then run it like (mysql example)
 ```
-docker run --rm pingdom2mysql --appkey=$YOURAPPKEY --checkid=$CHECKID --email=$ACCOUNTMAIL --pass=$ACCOUNTPASSWORD  --mysqlurl="$DBUSER:$DBPASS@($DBIP:$DBPORT)/$DBNAME" --output="mysql"
+docker run --rm pingdom2stats --appkey=$YOURAPPKEY --checkid=$CHECKID --email=$ACCOUNTMAIL --pass=$ACCOUNTPASSWORD  --mysqlurl="$DBUSER:$DBPASS@($DBIP:$DBPORT)/$DBNAME" --output="mysql"
 ```
 
 ## Pulling the historical data from Pingdom
@@ -58,13 +59,9 @@ You would need to add the configuration variables, lines 4-9 of `fetch_history`.
 
 # Usage information
 ```
-./pingdom2mysql  --help
-Using Pingdom's API as described in: https://www.pingdom.com/resources/api
-Version: v0.2.2-4-g690a40b
-Usage: pingdom2mysql [options]
-All options are required (but some have defaults):
+./pingdom2stats --help
   --addcheck
-        Add new check into the mysql table, requires --mysqlurl, --checkid
+        Add new check into the mysql table, requires a data store, --checkid
   --appkey string
         Appkey for pingdom's API
   --checkid string
@@ -72,7 +69,7 @@ All options are required (but some have defaults):
   --email string
         Pingdom's API configured e-mail account
   --from value
-        from which (Unix)time we are asking, default 24 hours ago which is  (default 1522841253)
+        from which (Unix)time we are asking, default 24 hours ago which is  (default 1522878124)
   --inittable
         Initialize the table, requires --mysqlurl
   --mysqlurl string
@@ -82,9 +79,12 @@ All options are required (but some have defaults):
         Output destination (console, db) (default "console")
   --pass string
         password for pingdom's API
+  --pgschema string
+        Postgres schema (default "postgres")
   --pgurl string
         postgres connection in DSN, like: postgres://username:password@address:port/dbname?sslmode=disable.
         Cannot use together with --mysqlurl
   --to value
-        until which (Unix)time we are asking, default now which is  (default 1522927653)
+        until which (Unix)time we are asking, default now which is  (default 1522964524)
+Using Pingdom's API as described in: https://www.pingdom.com/resources/api Version: v0.3.1 Usage: pingdom2stats [options] Most options are required (and some have defaults):
 ```

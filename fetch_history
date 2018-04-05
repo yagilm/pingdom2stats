@@ -32,6 +32,6 @@ then
   echo "curl -u $USER:$PASS -H "app-key: $APPKEY" https://api.pingdom.com/api/2.0/checks/ | jq ."
 fi
 while [  $COUNTER -lt $NOW ]; do
-  ./pingdom2mysql --appkey=${APPKEY} --email=${EMAIL} --pass=${PASS}  --${DBTYPE}=${DBURL} ${SCHEMA} --output=${OUTPUT} --checkid=${CHECKID} --from=$(($COUNTER - $DAYINSECONDS)) --to=$COUNTER
+  ./pingdom2stats --appkey=${APPKEY} --email=${EMAIL} --pass=${PASS}  --${DBTYPE}=${DBURL} ${SCHEMA} --output=${OUTPUT} --checkid=${CHECKID} --from=$(($COUNTER - $DAYINSECONDS)) --to=$COUNTER
     let COUNTER=COUNTER+$DAYINSECONDS
 done

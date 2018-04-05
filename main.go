@@ -47,11 +47,11 @@ func init() {
 	flag.StringVar(&Config.pgurl, "pgurl", "", "postgres connection in DSN, like: postgres://username:password@address:port/dbname?sslmode=disable.\n\tCannot use together with --mysqlurl")
 	flag.StringVar(&Config.pgschema, "pgschema", "postgres", "Postgres schema")
 	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table, requires --mysqlurl ")
-	flag.BoolVar(&Config.addcheck, "addcheck", false, "Add new check into the mysql table, requires --mysqlurl, --checkid ")
+	flag.BoolVar(&Config.addcheck, "addcheck", false, "Add new check into the mysql table, requires a data store,--checkid ")
 
 	flag.Usage = func() {
 		fmt.Println("Using Pingdom's API as described in: https://www.pingdom.com/resources/api")
-		fmt.Printf("Version: %s\nUsage: pingdom2mysql [options]\nAll options are required (but some have defaults):\n", version)
+		fmt.Printf("Version: %s\nUsage: pingdom2stats [options]\nMost options are required (and some have defaults):\n", version)
 		flag.PrintDefaults()
 	}
 	flag.Parse()
