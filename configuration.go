@@ -12,6 +12,7 @@ type Configuration struct {
 	output    string
 	mysqlurl  string // mysql connection in DSN (Data Source Name)
 	pgurl     string // postgres connection in DSN (Data Source Name)
+	pgschema  string
 	inittable bool
 	addcheck  bool
 }

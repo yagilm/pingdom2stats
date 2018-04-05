@@ -45,6 +45,7 @@ func init() {
 	flag.StringVar(&Config.output, "output", "console", "Output destination (console, db)")
 	flag.StringVar(&Config.mysqlurl, "mysqlurl", "", "mysql connection in DSN, like: username:password@(address)/dbname.\n\tCannot use together with --pgurl")
 	flag.StringVar(&Config.pgurl, "pgurl", "", "postgres connection in DSN, like: postgres://username:password@address:port/dbname?sslmode=disable.\n\tCannot use together with --mysqlurl")
+	flag.StringVar(&Config.pgschema, "pgschema", "postgres", "Postgres schema")
 	flag.BoolVar(&Config.inittable, "inittable", false, "Initialize the table, requires --mysqlurl ")
 	flag.BoolVar(&Config.addcheck, "addcheck", false, "Add new check into the mysql table, requires --mysqlurl, --checkid ")
 
@@ -130,7 +131,7 @@ func sendToMysql(res *Response) error {
 		case "mysql":
 			statement = fmt.Sprintf("INSERT INTO summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON DUPLICATE KEY UPDATE %s_avgresponse=%d,%s_downtime=%d", checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
 		case "postgres":
-			statement = fmt.Sprintf("INSERT INTO summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON CONFLICT (timestamp) DO UPDATE SET %s_avgresponse=%d,%s_downtime=%d", checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
+			statement = fmt.Sprintf("INSERT INTO %s.summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON CONFLICT (timestamp) DO UPDATE SET %s_avgresponse=%d,%s_downtime=%d", Config.pgschema, checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
 		}
 		_, err := db.Exec(statement)
 		if err != nil {
@@ -160,7 +161,7 @@ func addCheckID(checkid string) {
 	defer db.Close()
 	// TODO: Add check for if the column exists
 	checknameid := getCheckName()
-	_, err := db.Exec(fmt.Sprintf("ALTER TABLE summary_performances ADD COLUMN %s_avgresponse int, ADD COLUMN %s_downtime int", checknameid, checknameid))
+	_, err := db.Exec(fmt.Sprintf("ALTER TABLE %s.summary_performances ADD COLUMN %s_avgresponse int, ADD COLUMN %s_downtime int", Config.pgschema, checknameid, checknameid))
 	if err != nil {
 		panic(err.Error())
 	}
