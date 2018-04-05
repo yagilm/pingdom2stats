@@ -131,8 +131,9 @@ func sendToMysql(res *Response) error {
 		case "mysql":
 			statement = fmt.Sprintf("INSERT INTO summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON DUPLICATE KEY UPDATE %s_avgresponse=%d,%s_downtime=%d", checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
 		case "postgres":
-			statement = fmt.Sprintf("INSERT INTO %s.summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON CONFLICT (timestamp) DO UPDATE SET %s_avgresponse=%d,%s_downtime=%d", Config.pgschema, checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
+			statement = fmt.Sprintf("INSERT INTO %s.summary_performances (timestamp,%s_avgresponse,%s_downtime) VALUES('%s',%d,%d) ON CONFLICT (timestamp) DO UPDATE SET %s_avgresponse=%d, %s_downtime=%d", Config.pgschema, checknameid, checknameid, starttime, avgresponcetime, downtime, checknameid, avgresponcetime, checknameid, downtime)
 		}
+		// fmt.Println(statement)
 		_, err := db.Exec(statement)
 		if err != nil {
 			panic(err.Error())
