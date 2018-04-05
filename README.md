@@ -60,6 +60,10 @@ You would need to add the configuration variables, lines 4-9 of `fetch_history`.
 # Usage information
 ```
 ./pingdom2stats --help
+Using Pingdom's API as described in: https://www.pingdom.com/resources/api
+Version: v0.3.2
+Usage: pingdom2stats [options]
+Most options are required (and some have defaults):
   --addcheck
         Add new check into the mysql table, requires a data store, --checkid
   --appkey string
@@ -86,5 +90,4 @@ You would need to add the configuration variables, lines 4-9 of `fetch_history`.
         Cannot use together with --mysqlurl
   --to value
         until which (Unix)time we are asking, default now which is  (default 1522964524)
-Using Pingdom's API as described in: https://www.pingdom.com/resources/api Version: v0.3.1 Usage: pingdom2stats [options] Most options are required (and some have defaults):
 ```
