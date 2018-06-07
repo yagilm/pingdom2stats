@@ -164,7 +164,7 @@ func addCheckID(checkid string) {
 	checknameid := getCheckName()
 	_, err := db.Exec(fmt.Sprintf("ALTER TABLE %s.summary_performances ADD COLUMN %s_avgresponse int, ADD COLUMN %s_downtime int", Config.pgschema, checknameid, checknameid))
 	if err != nil {
-		panic(err.Error())
+  log.Panicln("Could not ALTER TABLE to create new check (maybe check exists? Error is:", err)
 	}
 }
 func main() {
